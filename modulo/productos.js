@@ -1,34 +1,41 @@
 const express = require('express');
-const contenedor = require('./api');
 const { Router } = express;
-
+const router = Router();
 
 let productos = [
     {
         id: 1,
         nombre: 'Escoba',
         precio: 500
+    },
+    {
+        id: 2,
+        nombre: 'Jabon',
+        precio: 200
+    },
+    {
+        id: 3,
+        nombre: 'Balde',
+        precio: 500
     }
 ]
 
-let Producto = contenedor.Content;
-let nuevoProducto = new Producto(productos);
-
-
-const router = Router();
 
 router.get ('/api/productos', async (req, res) => {
-    res.send(nuevoProducto)
+    res.send(productos)
 });
 
 router.get('/api/productos/:id', async (req, res) => {
-    if ( productos.id == ""){
-        res.send({ error : 'producto no encontrado' }) 
-    } else {
-        const idProductos = await content.getById()
-        res.send(idProductos)
+    const { id } = req.params 
+    if ( isNaN(id)){
+        return res.status(400).send('No existe el id');
+    } 
+    const p = productos.find((e) => e.id == id)
+    if (p == undefined){
+        res.status(404).send({error: 'Producto no encontrado'});
+        return
     }
-
+    res.send(p)
 })
 
 router.post('/api/productos', async (req, res) => {
@@ -38,13 +45,35 @@ router.post('/api/productos', async (req, res) => {
 });
 
 router.put('/api/productos/:id', async (req, res) => {
-    const postProduct = await content.updateById()
-    res.status(201).send(postProduct);
+    const productoAActualizar = req.body;
+    const { id } = req.params
+    if (isNaN(id)){
+        res.status(400).send({ error: 'El parametro no es un numero'});
+        return
+    }
+    const p = productos.find((e) => e.id == id)
+    if (p == undefined){
+        res.status(404).send({ error: 'Producto no encontrado'});
+    }
+    const index = productos.indexOf(p)
+    productos[index] = productoAActualizar
+    res.send ({statusPut: 'ok'})
 });
 
 router.delete('/api/productos/:id', async (req, res) => {
-    const productoAEliminar = await content.deleteById()
-    res.status(201).send(productoAEliminar);
+    const { id } = req.params
+    if (isNan (id)){
+        res.status(400).send({ error: 'El parametro no es un numero'});
+        return
+    }
+    const p = productos.find((e) => e.id == id)
+    if (p == undefined){
+        res.status(400).send({ error: 'Producto no encontrado'})
+        return
+    }
+    const index = productos.indexOf(p)
+    productos.splice(index, 1)
+    res.send({ statusDelete: 'ok'})
 });
 
 module.exports = router;
